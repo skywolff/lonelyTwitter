@@ -35,15 +35,30 @@ public class LonelyTwitterActivity extends Activity {
 		oldTweetsList = (ListView) findViewById(R.id.oldTweetsList);
 
 		saveButton.setOnClickListener(new View.OnClickListener() {
-
 			public void onClick(View v) {
-				setResult(RESULT_OK);
+//				setResult(RESULT_OK);
 				String text = bodyText.getText().toString();
+                ImportantTweet importantTweet = new ImportantTweet();
+                try {
+                    importantTweet.setMessage(text);
+                } catch (TweetTooLongException e){
+
+                }
 				saveInFile(text, new Date(System.currentTimeMillis()));
-				finish();
+//				finish();
 
 			}
+
 		});
+
+//		Button clearButton = (Button) findViewById(R.id.clear);
+//
+//        clearButton.setOnClickListener(new View.OnClickListener() {
+//
+//            public void onClick(View v) {
+//
+//            }
+//        });
 	}
 
 	@Override
@@ -51,8 +66,7 @@ public class LonelyTwitterActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onStart();
 		String[] tweets = loadFromFile();
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-				R.layout.list_item, tweets);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item, tweets);
 		oldTweetsList.setAdapter(adapter);
 	}
 
@@ -81,7 +95,7 @@ public class LonelyTwitterActivity extends Activity {
 		try {
 			FileOutputStream fos = openFileOutput(FILENAME,
 					Context.MODE_APPEND);
-			fos.write(new String(date.toString() + " | " + text)
+			fos.write(new String(date.toString() + " | " + text + "\n")
 					.getBytes());
 			fos.close();
 		} catch (FileNotFoundException e) {
