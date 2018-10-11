@@ -13,63 +13,72 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-public class LonelyTwitterActivity extends Activity {
-
+public class LonelyTwitterActivity extends Activity
+{
 	private static final String FILENAME = "file.sav";
 	private EditText bodyText;
 	private ListView oldTweetsList;
-	
+    private ArrayList<Tweet> tweetList;
+    private ArrayAdapter<Tweet> adapter;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		bodyText = findViewById(R.id.body);
+		Button saveButton = findViewById(R.id.save);
+		Button clearButton = findViewById(R.id.clear);
 
-		bodyText = (EditText) findViewById(R.id.body);
-		Button saveButton = (Button) findViewById(R.id.save);
-		oldTweetsList = (ListView) findViewById(R.id.oldTweetsList);
+        this.tweetList = new ArrayList<Tweet>();
+        adapter = new ArrayAdapter<Tweet>(this, R.layout.list_item, tweetList);
+		this.oldTweetsList = findViewById(R.id.oldTweetsList);
+        oldTweetsList.setAdapter(adapter);
 
 		saveButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				setResult(RESULT_OK);
-				String text = bodyText.getText().toString();
-                NormalTweet tweet = new NormalTweet();
+				String text = bodyText.getText().toString();    // get text from Joshua said
+                NormalTweet newNormalTweet = new NormalTweet();          // create new tweet and set msg
                 try {
-                    tweet.setMessage(text);
+                    newNormalTweet.setMessage(text);
+                    newNormalTweet.setDate(new Date(System.currentTimeMillis()));
+                    adapter.add(newNormalTweet);
                 } catch (TweetTooLongException e){
                     e.printStackTrace();
                 }
-				saveInFile(text, new Date(System.currentTimeMillis()));
-//                finish();
 			}
-
 		});
 
-//		Button clearButton = (Button) findViewById(R.id.clear);
-//
-//        clearButton.setOnClickListener(new View.OnClickListener() {
-//
-//            public void onClick(View v) {
-//
-//            }
-//        });
+        clearButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                adapter.clear();
+            }
+        });
 	}
 
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		String[] tweets = loadFromFile();
+		tweetList = loadFromFile();
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item, tweets);
+		// TODO use gson to store
 		oldTweetsList.setAdapter(adapter);
 	}
 
-	private String[] loadFromFile() {
+	@Override
+    protected void onPause() {
+	    // TODO save to file onPause
+    }
+
+	private ArrayAdapter<Tweet> loadFromFile() {
 		ArrayList<String> tweets = new ArrayList<String>();
 		try {
 			FileInputStream fis = openFileInput(FILENAME);
@@ -90,7 +99,7 @@ public class LonelyTwitterActivity extends Activity {
 		return tweets.toArray(new String[tweets.size()]);
 	}
 	
-	private void saveInFile(String text, Date date) {
+	private void saveInFile(ArrayList<Tweet> tweetList) {
 		try {
 			FileOutputStream fos = openFileOutput(FILENAME,
 					Context.MODE_APPEND);
